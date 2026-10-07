@@ -121,5 +121,16 @@
     "description": "Híbrido. Power BI, SQL e MySQL.",
     "origin": "Campinas, SP",
     "query_area": "analise"
+  },
+  {
+    "site": "linkedin",
+    "title": "Engenheiro de Dados Jr",
+    "company": "Cloud Analytics SP",
+    "location": "São Paulo, São Paulo, Brazil",
+    "url": "https://www.linkedin.com/jobs/view/1000000013",
+    "description": "Stack: Scala, Spark, Kafka, Databricks, AWS e Airflow. Desejável Python.",
+    "job_level": "entry level",
+    "origin": "São Paulo, SP",
+    "query_area": "engenharia"
   }
 ]

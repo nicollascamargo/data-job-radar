@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS jobs (
     modality     TEXT,
     score        INTEGER,
     matched      INTEGER,
-    skills       TEXT,
+    skills       TEXT,     -- every skill the job asks for
+    missing      TEXT,     -- the ones not in my CV
+    skill_match  INTEGER,  -- % of the job's skills I have
     date_posted  TEXT,
     first_seen   TEXT,
     last_seen    TEXT,
@@ -69,18 +71,20 @@ class Store:
         self.conn.execute(
             """
             INSERT INTO jobs (key, title, company, location, site, url, area, level, modality,
-                              score, matched, skills, date_posted, first_seen, last_seen)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              score, matched, skills, missing, skill_match, date_posted,
+                              first_seen, last_seen)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(key) DO UPDATE SET
                 title=excluded.title, company=excluded.company, location=excluded.location,
                 site=excluded.site, url=excluded.url, area=excluded.area, level=excluded.level,
                 modality=excluded.modality, score=excluded.score, matched=excluded.matched,
-                skills=excluded.skills, date_posted=excluded.date_posted,
+                skills=excluded.skills, missing=excluded.missing,
+                skill_match=excluded.skill_match, date_posted=excluded.date_posted,
                 last_seen=excluded.last_seen, notified_at=NULL
             """,
             (key, job.title, job.company, job.location, job.site, job.url, ev.area, ev.level,
-             ev.modality, ev.score, int(ev.matched), ",".join(ev.skills), job.date_posted,
-             when, when),
+             ev.modality, ev.score, int(ev.matched), ",".join(ev.skills + ev.missing),
+             ",".join(ev.missing), ev.skill_match, job.date_posted, when, when),
         )
 
     def mark_notified(self, keys: list[str], when: str | None = None) -> None:

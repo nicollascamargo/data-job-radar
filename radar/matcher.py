@@ -6,7 +6,8 @@ Rules, in order:
      titles with no level are kept with a lower score unless the description asks
      for more years of experience than allowed.
   3. The job must be remote, or in/near one of the target cities.
-  4. Score = level + area + skills from the profile + location, minus penalties.
+  4. Score = level + area + share of the job's skills found in my CV + location,
+     minus penalties.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from __future__ import annotations
 import re
 
 from .models import Evaluation, Job, norm
+from .skills import extract_skills
 
 AREA_PATTERNS: dict[str, list[str]] = {
     "analise": [
@@ -115,13 +117,22 @@ def in_target_city(location: str, cities: list[str]) -> bool:
     return any(norm(city) in first_part for city in cities)
 
 
-def find_skills(text: str, skills: list[str]) -> list[str]:
-    found = []
-    for skill in skills:
-        pattern = re.escape(norm(skill)).replace(r"\ ", r"\s?")
-        if re.search(rf"(?<![a-z0-9$]){pattern}s?(?![a-z0-9$])", text):
-            found.append(skill)
-    return found
+def compare_skills(job: Job, my_skills: list[str]) -> tuple[list[str], list[str], int | None, int]:
+    """What the job asks for vs. what the CV has.
+
+    Returns (have, missing, match %, score points out of 25). A job that names
+    only one or two skills says little, so its points lean toward a neutral 10.
+    """
+    required = extract_skills(f"{job.title} {job.description}")
+    if not required:
+        return [], [], None, 10
+    mine = set(my_skills)
+    have = [s for s in required if s in mine]
+    missing = [s for s in required if s not in mine]
+    coverage = len(have) / len(required)
+    confidence = min(1.0, len(required) / 3)
+    points = round(25 * coverage * confidence + 10 * (1 - confidence))
+    return have, missing, round(100 * coverage), points
 
 
 def evaluate(job: Job, config: dict) -> Evaluation:
@@ -161,8 +172,12 @@ def evaluate(job: Job, config: dict) -> Evaluation:
     # 4. Score
     score = {"title": 35, "linkedin": 30, "description": 20}.get(level_source, 10)
     score += 12 if area == "geral" else 25
-    skills = find_skills(f"{title} {description}", config["my_skills"])
-    score += min(25, 5 * len(skills))
+    have, missing, skill_match, skill_points = compare_skills(job, config["my_skills"])
+    score += skill_points
+    if skill_match is not None and skill_match < config["min_skill_match"]:
+        return Evaluation(False, 0, area=area, level=level, modality=modality, skills=have,
+                          missing=missing, skill_match=skill_match,
+                          reasons=[f"only {skill_match}% of the skills asked"])
     score += 10 if (modality == "remoto" or city_match) else 5
     if too_experienced:
         score -= 20
@@ -175,6 +190,8 @@ def evaluate(job: Job, config: dict) -> Evaluation:
         area=area,
         level=level,
         modality=modality,
-        skills=skills,
+        skills=have,
+        missing=missing,
+        skill_match=skill_match,
         reasons=reasons if score >= config["min_score"] else reasons + ["score below minimum"],
     )

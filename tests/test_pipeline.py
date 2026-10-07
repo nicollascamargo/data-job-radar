@@ -15,6 +15,7 @@ def test_sample_run_finds_expected_jobs():
     assert "Analista de Dados Sênior" not in titles
     assert "Engenheiro de Dados Pleno" not in titles
     assert "Cientista de Dados Jr" not in titles          # on-site in Ribeirão Preto
+    assert "Engenheiro de Dados Jr" not in titles         # asks mostly for skills not in the CV
     assert titles.count("Analista de Dados Júnior") == 1  # same job on two sites
     scores = [ev.score for _, _, ev in matches]
     assert scores == sorted(scores, reverse=True)

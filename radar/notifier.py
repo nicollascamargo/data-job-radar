@@ -27,8 +27,14 @@ def format_job(job: Job, ev: Evaluation) -> str:
         f"📍 {e(place)}",
         f"🎯 {LEVEL_LABELS.get(ev.level, ev.level)} · {AREA_LABELS.get(ev.area, ev.area)} · {ev.score}/100",
     ]
-    if ev.skills:
-        lines.append(f"🧰 {e(', '.join(ev.skills))}")
+    if ev.skill_match is not None:
+        lines.append(f"🧩 Você tem {ev.skill_match}% das skills pedidas")
+        if ev.skills:
+            lines.append(f"✅ {e(', '.join(ev.skills))}")
+        if ev.missing:
+            lines.append(f"📚 Falta: {e(', '.join(ev.missing))}")
+    else:
+        lines.append("🧩 Vaga sem lista de skills — vale abrir e conferir")
     lines.append(f'🔗 <a href="{e(job.url, quote=True)}">Ver no {SITE_LABELS.get(job.site, job.site)}</a>')
     return "\n".join(lines)
 

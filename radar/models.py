@@ -47,5 +47,7 @@ class Evaluation:
     area: str = ""
     level: str = ""              # estagio / junior / nao informado
     modality: str = ""           # remoto / hibrido / presencial
-    skills: list[str] = field(default_factory=list)
+    skills: list[str] = field(default_factory=list)    # asked by the job and in my CV
+    missing: list[str] = field(default_factory=list)   # asked by the job, not in my CV
+    skill_match: int | None = None                      # % of the job's skills I have
     reasons: list[str] = field(default_factory=list)   # why it was rejected

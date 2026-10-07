@@ -1,0 +1,27 @@
+# Generated from my CV on 2026-10-07 by scripts/build_profile.py
+# Only skills are stored here. Add or remove items freely.
+# (espanhol removed: A2 does not meet jobs that ask for Spanish)
+skills:
+- python
+- r
+- sql
+- c#
+- sql server
+- mysql
+- pandas
+- numpy
+- scikit-learn
+- matplotlib
+- fastapi
+- etl
+- git
+- ci/cd
+- excel
+- power bi
+- estatistica
+- machine learning
+- deep learning
+- series temporais
+- nlp
+- llm / ia generativa
+- ingles

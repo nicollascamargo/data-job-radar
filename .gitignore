@@ -5,3 +5,7 @@ __pycache__/
 venv/
 .env
 # data/jobs.db is versioned on purpose: it is how the radar remembers what it already sent
+
+# never commit the CV itself: only profile.yaml (skills) goes to the repo
+*.docx
+*.pdf
