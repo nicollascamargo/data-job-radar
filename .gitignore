@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+# data/jobs.db is versioned on purpose: it is how the radar remembers what it already sent

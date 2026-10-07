@@ -1,0 +1,125 @@
+[
+  {
+    "site": "linkedin",
+    "title": "Analista de Dados Júnior",
+    "company": "Agro Sorocaba S.A.",
+    "location": "Sorocaba, São Paulo, Brazil",
+    "url": "https://www.linkedin.com/jobs/view/1000000001",
+    "description": "Modelo híbrido (3x na semana). Requisitos: Python, SQL Server, Power BI e Excel avançado. Desejável conhecimento em ETL.",
+    "job_level": "entry level",
+    "origin": "Sorocaba, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "indeed",
+    "title": "Estágio em Ciência de Dados",
+    "company": "Fintech Campinas",
+    "location": "Campinas, SP, BR",
+    "url": "https://br.indeed.com/viewjob?jk=sample0002",
+    "description": "Cursando Ciência da Computação, ADS ou similar. Python (pandas), estatística e noções de machine learning.",
+    "origin": "Campinas, SP",
+    "query_area": "ciencia"
+  },
+  {
+    "site": "linkedin",
+    "title": "Data Engineer Jr - Remoto",
+    "company": "Nuvem Dados",
+    "location": "Brasil",
+    "url": "https://www.linkedin.com/jobs/view/1000000003",
+    "description": "100% remoto. Stack: Python, SQL, Airflow, pipelines de ETL, Git.",
+    "is_remote": true,
+    "origin": "remote",
+    "query_area": "engenharia"
+  },
+  {
+    "site": "indeed",
+    "title": "Analista de Dados Sênior",
+    "company": "Banco Grande",
+    "location": "São Paulo, SP, BR",
+    "url": "https://br.indeed.com/viewjob?jk=sample0004",
+    "description": "Python, SQL, liderança técnica.",
+    "origin": "São Paulo, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "glassdoor",
+    "title": "Analista de Dados",
+    "company": "Indústria Hortolândia",
+    "location": "Hortolândia",
+    "url": "https://www.glassdoor.com.br/job-listing/sample0005",
+    "description": "Experiência mínima de 4 anos com SQL e Power BI.",
+    "origin": "Hortolândia, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "indeed",
+    "title": "Analista de Dados",
+    "company": "Varejo Paulista",
+    "location": "São Paulo, SP, BR",
+    "url": "https://br.indeed.com/viewjob?jk=sample0006",
+    "description": "Atuação presencial. SQL, Power BI, Excel. Primeiro emprego na área é bem-vindo.",
+    "origin": "São Paulo, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "indeed",
+    "title": "Auxiliar de Entrada de Dados",
+    "company": "Escritório X",
+    "location": "Sorocaba, SP, BR",
+    "url": "https://br.indeed.com/viewjob?jk=sample0007",
+    "description": "Digitação e cadastro.",
+    "origin": "Sorocaba, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "adzuna",
+    "title": "Cientista de Dados Jr",
+    "company": "Agrotech Ribeirão",
+    "location": "Ribeirão Preto, São Paulo",
+    "url": "https://www.adzuna.com.br/details/sample0008",
+    "description": "Trabalho presencial. Python e machine learning.",
+    "origin": "remote",
+    "query_area": "ciencia"
+  },
+  {
+    "site": "indeed",
+    "title": "Analista de Dados Júnior",
+    "company": "Agro Sorocaba S.A.",
+    "location": "Sorocaba, SP, BR",
+    "url": "https://br.indeed.com/viewjob?jk=sample0009",
+    "description": "Mesma vaga publicada em outro site.",
+    "origin": "Sorocaba, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "linkedin",
+    "title": "Engenheiro de Dados Pleno",
+    "company": "Tech SP",
+    "location": "São Paulo, São Paulo, Brazil",
+    "url": "https://www.linkedin.com/jobs/view/1000000010",
+    "description": "Python, Spark, SQL.",
+    "job_level": "mid-senior level",
+    "origin": "São Paulo, SP",
+    "query_area": "engenharia"
+  },
+  {
+    "site": "glassdoor",
+    "title": "Estagiário(a) de Dados",
+    "company": "Metalúrgica Votorantim",
+    "location": "Votorantim",
+    "url": "https://www.glassdoor.com.br/job-listing/sample0011",
+    "description": "Apoio em relatórios no Power BI e consultas SQL. Conhecimento em Python é um diferencial.",
+    "origin": "Sorocaba, SP",
+    "query_area": "analise"
+  },
+  {
+    "site": "adzuna",
+    "title": "Analista de BI Jr",
+    "company": "Logística Campinas",
+    "location": "Campinas, São Paulo",
+    "url": "https://www.adzuna.com.br/details/sample0012",
+    "description": "Híbrido. Power BI, SQL e MySQL.",
+    "origin": "Campinas, SP",
+    "query_area": "analise"
+  }
+]

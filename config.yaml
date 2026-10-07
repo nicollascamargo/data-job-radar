@@ -1,0 +1,59 @@
+# ---------------------------------------------------------------
+# Data Job Radar — search settings
+# Edit this file to change what the radar looks for.
+# ---------------------------------------------------------------
+
+# One search per area. Indeed and LinkedIn understand OR + quotes;
+# Glassdoor and Adzuna get the first quoted phrase only.
+queries:
+  analise: '"analista de dados" OR "data analyst"'
+  engenharia: '"engenheiro de dados" OR "data engineer"'
+  ciencia: '"cientista de dados" OR "data scientist"'
+
+# Cities searched for on-site and hybrid jobs (radius below).
+locations:
+  - Sorocaba, SP
+  - São Paulo, SP
+  - Campinas, SP
+  - Hortolândia, SP
+distance_miles: 25
+
+# Also search remote jobs anywhere in Brazil.
+search_remote: true
+remote_location: Brasil
+
+# Sources
+sites: [indeed, linkedin, glassdoor]
+adzuna: true                    # runs only if ADZUNA_APP_ID / ADZUNA_APP_KEY are set
+hours_old: 24                   # only jobs posted in the last N hours
+results_per_search: 30
+pause_seconds: 4                # pause between searches, to be gentle with the sites
+linkedin_fetch_description: true
+proxies: []                     # e.g. ["user:pass@host:port"] if LinkedIn starts blocking
+
+# ---------------------------------------------------------------
+# Profile — used to decide which jobs are worth a notification
+# ---------------------------------------------------------------
+levels: [estagio, junior]
+accept_unspecified_level: true  # many junior jobs never say "jr" in the title
+max_years_experience: 2         # skip jobs that ask for more than this
+cities: [sorocaba, sao paulo, campinas, hortolandia]
+my_skills:
+  - python
+  - sql
+  - sql server
+  - mysql
+  - power bi
+  - r
+  - git
+  - pandas
+  - etl
+  - fastapi
+  - machine learning
+  - excel
+  - estatistica
+
+min_score: 45                   # 0-100; raise it if you get too many alerts
+max_jobs_per_run: 20            # best ones go to Telegram, the rest stay in the database
+dedupe_days: 30                 # a job seen in the last N days is not sent again
+notify_when_empty: false
