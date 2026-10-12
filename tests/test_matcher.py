@@ -41,6 +41,11 @@ def test_detect_area(title, area):
     ("Analista de Dados Sr.", "senior"),
     ("Analista de Dados Pleno", "senior"),
     ("Analista de Dados II", "senior"),
+    ("Analista de Dados I/II", "junior"),
+    ("Analista Jr I", "junior"),
+    ("Analista de Dados Senior I", "senior"),
+    ("Analista de Dados Pleno I", "senior"),
+    ("CIENTISTA DE DADOS ESPECIALISTA I - GEN AI", "senior"),
     ("Engenheiro de Dados - Tech Lead", "senior"),
     ("Analista de BI", "nao informado"),
 ])
@@ -111,6 +116,11 @@ def test_good_junior_job_matches():
 
 def test_senior_job_is_rejected():
     assert not evaluate(job("Cientista de Dados Sênior"), CONFIG).matched
+
+
+def test_specialist_grade_i_is_rejected():
+    ev = evaluate(job("CIENTISTA DE DADOS ESPECIALISTA I - GEN AI"), CONFIG)
+    assert not ev.matched and ev.reasons == ["level above junior"]
 
 
 def test_unspecified_level_with_many_years_is_rejected():

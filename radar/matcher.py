@@ -42,14 +42,16 @@ NOT_DATA_ROLE = re.compile(
 )
 
 INTERN = re.compile(r"\bestagi|\bintern(ship)?\b|\bestudante\b")
-JUNIOR = re.compile(
-    r"\b(junior|jr|trainee)\b|\bentry[ -]level\b|(?<=\s)i(?=\s*($|[-|(/]))"
-)
+JUNIOR = re.compile(r"\b(junior|jr|trainee)\b|\bentry[ -]level\b")
 SENIOR = re.compile(
     r"\b(senior|sr|pleno|lead|lider|especialista|specialist|coordenador[a]?|coordinator|"
     r"gerente|manager|head|staff|principal|diretor[a]?|director|supervisor[a]?|"
-    r"arquitet[oa]|architect|ii|iii|iv)\b|\bpl\b(?!/)"
+    r"arquitet[oa]|architect)\b|\bpl\b(?!/)"
 )
+# Grade numerals only count when the title has no level word: "Especialista I" is
+# the first specialist grade, not a junior role.
+GRADE_I = re.compile(r"(?<=\s)i(?=\s*($|[-|(/]))")
+GRADE_ABOVE_I = re.compile(r"\b(ii|iii|iv)\b")
 LINKEDIN_LEVELS = {
     "internship": "estagio",
     "entry level": "junior",
@@ -86,6 +88,10 @@ def detect_level(title: str, job_level: str, description: str) -> tuple[str, str
     if JUNIOR.search(title):
         return "junior", "title"
     if SENIOR.search(title):
+        return "senior", "title"
+    if GRADE_I.search(title):
+        return "junior", "title"
+    if GRADE_ABOVE_I.search(title):
         return "senior", "title"
     linkedin = LINKEDIN_LEVELS.get(job_level)
     if linkedin:

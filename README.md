@@ -91,7 +91,7 @@ pip install -r requirements.txt
 python main.py --sample --dry-run   # offline demo with fake jobs
 python main.py --dry-run            # real search, prints instead of sending
 python main.py --sample             # sends the fake jobs to Telegram to test the bot
-pytest -q                           # 48 tests
+pytest -q                           # 54 tests
 ```
 
 Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as environment variables to send for real.
