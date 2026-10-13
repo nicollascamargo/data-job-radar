@@ -28,6 +28,8 @@ DEFAULTS: dict[str, Any] = {
     "accept_unspecified_level": True,
     "max_years_experience": 2,
     "cities": [],
+    "only_brazil": True,
+    "skip_exclusive_jobs": True,
     "profile_file": "profile.yaml",
     "extra_skills": [],
     "my_skills": [],

@@ -1,7 +1,8 @@
 import pytest
 
 from radar.config import DEFAULTS
-from radar.matcher import compare_skills, detect_area, detect_level, evaluate, in_target_city, years_required
+from radar.matcher import (compare_skills, detect_area, detect_level, evaluate, in_target_city, is_exclusive,
+                           outside_brazil, years_required)
 from radar.models import Job, norm
 from radar.skills import canonical, extract_skills
 
@@ -141,3 +142,71 @@ def test_onsite_job_outside_target_cities_is_rejected():
 
 def test_data_entry_is_not_a_data_job():
     assert evaluate(job("Auxiliar de Entrada de Dados"), CONFIG).area == ""
+
+
+@pytest.mark.parametrize("title", [
+    "Analytics Engineer - Brazil – Vaga exclusiva para PCD",
+    "Engenheiro (a) de Dados Júnior (Vaga Exclusiva PCD) - Banco de Talentos",
+    "Engenheiro de Dados JR (Vaga exclusivo para PCD)",
+    "Engenheiro(a) de Dados | Vaga Exclusiva PcD",
+    "Analista de Dados | Afirmativa PCD",
+    "Analista de Business Intelligence Júnior - Vaga Afirmativa para Pessoas com Deficiência - Allergan Aesthetics",
+    "Estágio em Engenharia de Análise de Dados - Vaga afirmativa para mulheres cis e trans",
+    "ANALISTA DE DADOS E INTELIGÊNCIA GEOESPACIAL (VAGA AFIRMATIVA PARA MULHERES)",
+    "Data Engineer – Brazil – Vaga para mulheres",
+    "Grupo QuintoAndar | Senior Data Scientist (Women Applicants Only)",
+])
+def test_exclusive_titles(title):
+    assert is_exclusive(norm(title), "")
+
+
+@pytest.mark.parametrize("title", [
+    "Engenheiro(a) de Dados Júnior",
+    "Analista de Inteligência de Dados Júnior",
+    "Marketing Analytics Analyst",
+    "Analista de Dados Jr - Vaga também para PCD",
+])
+def test_titles_open_to_everyone(title):
+    assert not is_exclusive(norm(title), "")
+
+
+@pytest.mark.parametrize("description, exclusive", [
+    ("Esta vaga é exclusiva para pessoas com deficiência (PCD).", True),
+    ("Essa é uma vaga afirmativa para pessoas negras.", True),
+    ("Processo seletivo exclusivo para mulheres cis e trans.", True),
+    ("Todas as nossas vagas também são abertas a PCD.", False),
+    ("Confira também nossas vagas exclusivas para PCD no site.", False),
+    ("Não é uma vaga exclusiva para PCD: todas as pessoas podem se candidatar.", False),
+    ("Vaga exclusiva para estudantes de Estatística. Incentivamos mulheres a se candidatar.", False),
+])
+def test_exclusive_only_when_description_says_so(description, exclusive):
+    assert is_exclusive(norm("Analista de Dados Jr"), norm(description)) == exclusive
+
+
+def test_exclusive_job_is_rejected_unless_turned_off():
+    j = job("Engenheiro de Dados JR (Vaga exclusivo para PCD)", location="Remoto, BR", origin="remote")
+    assert evaluate(j, CONFIG).reasons == ["exclusive job"]
+    assert evaluate(j, {**CONFIG, "skip_exclusive_jobs": False}).matched
+
+
+@pytest.mark.parametrize("location", [
+    "United States", "New York, NY", "Seattle, WA", "Washington, DC", "Ohio, United States",
+    "Remote - US", "Lisboa, Portugal",
+])
+def test_locations_outside_brazil(location):
+    assert outside_brazil(norm(location))
+
+
+@pytest.mark.parametrize("location", [
+    "São Paulo, São Paulo, Brazil", "Remoto, BR", "Greater São Paulo Area", "Greater Campinas",
+    "AM, BR", "Barueri", "Jundiaí", "Sorocaba, SP", "Belém, PA", "Brasil", "",
+])
+def test_locations_in_brazil(location):
+    assert not outside_brazil(norm(location))
+
+
+def test_remote_job_abroad_is_rejected_unless_turned_off():
+    j = job("Remote Data Analyst (Entry-Level / Junior)", location="United States", origin="remote",
+            is_remote=True)
+    assert evaluate(j, CONFIG).reasons == ["outside Brazil"]
+    assert evaluate(j, {**CONFIG, "only_brazil": False}).matched

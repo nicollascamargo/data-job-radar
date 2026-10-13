@@ -2,11 +2,14 @@
 
 Rules, in order:
   1. The title must be a data role (analysis, engineering or science).
-  2. The level must be internship or junior. Senior/mid-level titles are dropped;
+  2. Jobs reserved for one group (PCD, women, "vaga afirmativa") are skipped,
+     unless skip_exclusive_jobs is off.
+  3. The level must be internship or junior. Senior/mid-level titles are dropped;
      titles with no level are kept with a lower score unless the description asks
      for more years of experience than allowed.
-  3. The job must be remote, or in/near one of the target cities.
-  4. Score = level + area + share of the job's skills found in my CV + location,
+  4. The job must be in Brazil (unless only_brazil is off), and remote or in/near
+     one of the target cities.
+  5. Score = level + area + share of the job's skills found in my CV + location,
      minus penalties.
 """
 
@@ -73,6 +76,35 @@ REMOTE_IN_TEXT = re.compile(
 )
 HYBRID = re.compile(r"\b(hibrid[oa]|hybrid)\b")
 
+# Jobs reserved for one group. A title that names the group is enough ("Vaga para
+# mulheres", "Afirmativa PCD"); a description has to say the job itself is
+# exclusive, since many say all their jobs are "também abertas a PCD".
+GROUP = (
+    r"((pcds?|pwds?|pessoas? com deficiencia|people with disabilit\w*|mulheres|women(?!')|"
+    r"pessoas? (negras?|pretas?|trans|indigenas?)|negr[oa]s|lgbt\w*)\b|pessoas? 50\+)"
+)
+EXCLUSIVE_TITLE = re.compile(rf"\bafirmativ[ao]\b|\b{GROUP}")
+ALSO_OPEN = re.compile(r"\btambem\b|ampla concorrencia")
+EXCLUSIVE_IN_TEXT = re.compile(
+    rf"\bvaga (e )?afirmativa\b|"
+    rf"\bvaga (e )?(exclusiv[ao]|destinada exclusivamente)\b[^.;!?\n]{{0,40}}?\b{GROUP}|"
+    rf"\b(exclusivamente|exclusively for|reserved for|open only to)\b[^.;!?\n]{{0,30}}?\b{GROUP}|"
+    rf"\bprocesso seletivo (e )?(exclusivo|afirmativo)\b[^.;!?\n]{{0,40}}?\b{GROUP}"
+)
+NEGATION = re.compile(r"\bnao\b")
+
+# Places that are clearly not in Brazil. US cities come from LinkedIn as "City, ST";
+# state codes Brazil also uses (AL, MA, MS, MT, PA, SC) are left out on purpose, so
+# "Belém, PA" is never dropped. Anything that also says Brazil is kept.
+BRAZIL_LOCATION = re.compile(r"\b(brazil|brasil|br)\b")
+FOREIGN_LOCATION = re.compile(
+    r"\b(united states|usa|us|estados unidos|eua|canada|mexico|argentina|chile|uruguay|"
+    r"portugal|spain|espanha|united kingdom|uk|reino unido|ireland|germany|alemanha|"
+    r"netherlands|france|italy|poland|india|philippines|europe|europa)\b|"
+    r",\s*(ak|az|ar|ca|co|ct|de|fl|ga|hi|ia|id|il|in|ks|ky|la|md|me|mi|mn|mo|nc|nd|ne|nh|"
+    r"nj|nm|nv|ny|oh|ok|or|ri|sd|tn|tx|ut|va|vt|wa|wi|wv|wy|dc)$"
+)
+
 
 def detect_area(title: str) -> str:
     for area, patterns in AREA_PATTERNS.items():
@@ -107,6 +139,19 @@ def years_required(description: str) -> int | None:
     found = [int(n) for p in YEARS_PATTERNS for n in p.findall(description)]
     found = [n for n in found if 0 < n <= 15]
     return max(found) if found else None
+
+
+def is_exclusive(title: str, description: str) -> bool:
+    """True when the job is reserved for one group (PCD, women, black people...)."""
+    if EXCLUSIVE_TITLE.search(title) and not ALSO_OPEN.search(title):
+        return True
+    # "Não é uma vaga exclusiva para PCD" says the opposite.
+    return any(not NEGATION.search(description[max(0, m.start() - 12):m.start()])
+               for m in EXCLUSIVE_IN_TEXT.finditer(description))
+
+
+def outside_brazil(location: str) -> bool:
+    return bool(FOREIGN_LOCATION.search(location)) and not BRAZIL_LOCATION.search(location)
 
 
 def detect_modality(job: Job, title: str, location: str, description: str) -> str:
@@ -152,7 +197,11 @@ def evaluate(job: Job, config: dict) -> Evaluation:
     if not area or NOT_DATA_ROLE.search(title):
         return Evaluation(False, 0, reasons=["not a data role"])
 
-    # 2. Level
+    # 2. Open to everyone?
+    if config["skip_exclusive_jobs"] and is_exclusive(title, description):
+        return Evaluation(False, 0, area=area, reasons=["exclusive job"])
+
+    # 3. Level
     level, level_source = detect_level(title, norm(job.job_level), description)
     if level == "senior":
         return Evaluation(False, 0, area=area, level=level, reasons=["level above junior"])
@@ -167,7 +216,9 @@ def evaluate(job: Job, config: dict) -> Evaluation:
         return Evaluation(False, 0, area=area, level=level,
                           reasons=[f"asks for {years}+ years of experience"])
 
-    # 3. Location / modality
+    # 4. Location / modality
+    if config["only_brazil"] and outside_brazil(location):
+        return Evaluation(False, 0, area=area, level=level, reasons=["outside Brazil"])
     modality = detect_modality(job, title, location, description)
     city_match = in_target_city(location, config["cities"])
     from_city_search = job.origin not in ("", "remote")
@@ -175,7 +226,7 @@ def evaluate(job: Job, config: dict) -> Evaluation:
         return Evaluation(False, 0, area=area, level=level, modality=modality,
                           reasons=["not remote and not in a target city"])
 
-    # 4. Score
+    # 5. Score
     score = {"title": 35, "linkedin": 30, "description": 20}.get(level_source, 10)
     score += 12 if area == "geral" else 25
     have, missing, skill_match, skill_points = compare_skills(job, config["my_skills"])

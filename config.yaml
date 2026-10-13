@@ -38,6 +38,8 @@ levels: [estagio, junior]
 accept_unspecified_level: true  # many junior jobs never say "jr" in the title
 max_years_experience: 2         # skip jobs that ask for more than this
 cities: [sorocaba, sao paulo, campinas, hortolandia]
+only_brazil: true               # skip jobs based abroad, even remote ones
+skip_exclusive_jobs: true       # skip jobs reserved for one group (PCD, vaga afirmativa)
 
 # My skills come from my CV: python scripts/build_profile.py <cv.docx>
 profile_file: profile.yaml

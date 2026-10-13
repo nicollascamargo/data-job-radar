@@ -46,9 +46,10 @@ GitHub Actions (07:07 and 17:07, Brasília time)
 | Check | Rule |
 |---|---|
 | Role | Title must be a data role. Data entry, data center and privacy jobs are excluded. |
+| Exclusive jobs | Jobs reserved for one group ("Vaga exclusiva PCD", "vaga afirmativa para mulheres") are skipped. The title is enough; the description only counts when it says the job itself is exclusive. Turn off with `skip_exclusive_jobs: false`. |
 | Level | Internship or junior from the title, LinkedIn's seniority label or the description. Senior, mid-level (Pleno, II, III), lead and manager titles are dropped. |
 | Experience | Jobs with no stated level are dropped if they ask for more than 2 years. |
-| Location | Remote anywhere in Brazil, or on-site / hybrid in or near the target cities. |
+| Location | Remote anywhere in Brazil, or on-site / hybrid in or near the target cities. Jobs clearly based abroad ("United States", "New York, NY", "Portugal") are dropped even when remote; turn off with `only_brazil: false`. |
 | Skills | At least 30% of the skills the job asks for must be in my CV. |
 | Score | level (up to 35) + area (25) + share of the job's skills I have (up to 25) + location (10). Default cutoff: 45. |
 
@@ -91,7 +92,7 @@ pip install -r requirements.txt
 python main.py --sample --dry-run   # offline demo with fake jobs
 python main.py --dry-run            # real search, prints instead of sending
 python main.py --sample             # sends the fake jobs to Telegram to test the bot
-pytest -q                           # 54 tests
+pytest -q                           # 95 tests
 ```
 
 Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` as environment variables to send for real.
