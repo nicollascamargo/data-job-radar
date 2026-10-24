@@ -108,6 +108,7 @@ def test_job_asking_mostly_skills_i_lack_is_rejected():
 def test_city_matches_first_part_only():
     assert in_target_city(norm("Campinas, São Paulo, Brazil"), CONFIG["cities"])
     assert not in_target_city(norm("Ribeirão Preto, São Paulo"), CONFIG["cities"])
+    assert not in_target_city(norm("Itupeva, SP"), ["itu"]) and in_target_city(norm("Itu, SP"), ["itu"])
 
 
 def test_good_junior_job_matches():

@@ -46,3 +46,42 @@ def test_long_alerts_are_split_for_telegram():
     assert len(messages) > 1
     assert all(len(m) <= TELEGRAM_LIMIT for m in messages)
     assert "LinkedIn falhou" in messages[-1]
+
+
+def test_matched_jobs_keep_their_text_for_cv_tailor():
+    from radar.storage import unpack
+    store = Store(":memory:")
+    j = Job(site="gupy", title="Analista de Dados Jr", company="ACME", location="Sorocaba", url="u",
+            description="Requisitos: Python e SQL", deadline="2026-11-20")
+    store.save(job_key(j), j, Evaluation(True, 80, area="analise"))
+    other = Job(site="gupy", title="Analista de Dados Sênior", company="ACME", location="Sorocaba", url="v",
+                description="texto")
+    store.save(job_key(other), other, Evaluation(False, 0, area="analise"))
+    rows = dict(store.conn.execute("SELECT title, description FROM jobs").fetchall())
+    assert unpack(rows["Analista de Dados Jr"]) == "Requisitos: Python e SQL"
+    assert rows["Analista de Dados Sênior"] is None              # only matched jobs keep the text
+    later = datetime.now(timezone.utc) + timedelta(days=61)
+    assert store.forget_old_texts(60, now=later) == 1
+
+
+def test_old_databases_get_the_new_columns(tmp_path):
+    import sqlite3
+    path = tmp_path / "old.db"
+    conn = sqlite3.connect(path)
+    conn.execute("CREATE TABLE jobs (key TEXT PRIMARY KEY, title TEXT, company TEXT, location TEXT, site TEXT, "
+                 "url TEXT, area TEXT, level TEXT, modality TEXT, score INTEGER, matched INTEGER, skills TEXT, "
+                 "missing TEXT, skill_match INTEGER, date_posted TEXT, first_seen TEXT, last_seen TEXT, notified_at TEXT)")
+    conn.commit()
+    conn.close()
+    store = Store(path)
+    assert {"description", "deadline"} <= {r[1] for r in store.conn.execute("PRAGMA table_info(jobs)")}
+
+
+def test_alert_says_when_it_was_posted_and_until_when_to_apply():
+    from datetime import date
+    from radar.notifier import format_job
+    j = Job(site="gupy", title="Estágio em Dados", company="NCS", location="São Paulo, SP", url="https://x",
+            date_posted="2026-10-23", deadline="2026-10-26")
+    ev = Evaluation(True, 89, area="analise", level="estagio", modality="hibrido", skills=["python"], skill_match=80)
+    text = format_job(j, ev, today=date(2026, 10, 24))
+    assert "publicada ontem" in text and "inscrições até 26/10 (faltam 2 dias)" in text and "Gupy" in text

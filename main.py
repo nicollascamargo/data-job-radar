@@ -89,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
     # The sample demo uses a throwaway database; a dry run reads the real one but saves nothing.
     store = Store(":memory:" if args.sample else args.db)
     matches = process(report, store, config)
+    store.forget_old_texts(config["keep_text_days"])
     top = matches[: config["max_jobs_per_run"]]
     extra = len(matches) - len(top)
     warnings = source_warnings(report)

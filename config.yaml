@@ -9,6 +9,11 @@ queries:
   analise: '"analista de dados" OR "data analyst"'
   engenharia: '"engenheiro de dados" OR "data engineer"'
   ciencia: '"cientista de dados" OR "data scientist"'
+  bi: '"analista de bi" OR "business intelligence"'
+  estagio: '"estágio em dados" OR "data intern"'
+
+# Gupy searches job titles one phrase at a time: the Portuguese phrases above, plus these.
+gupy_extra_terms: ["estagiário de dados", "estágio dados", "trainee dados", "analytics"]
 
 # Cities searched for on-site and hybrid jobs (radius below).
 locations:
@@ -24,6 +29,7 @@ remote_location: Brasil
 
 # Sources
 sites: [indeed, linkedin, glassdoor]
+gupy: true                      # portal.gupy.io: no key needed, full text and deadlines
 adzuna: true                    # runs only if ADZUNA_APP_ID / ADZUNA_APP_KEY are set
 hours_old: 24                   # only jobs posted in the last N hours
 results_per_search: 30
@@ -37,7 +43,12 @@ proxies: []                     # e.g. ["user:pass@host:port"] if LinkedIn start
 levels: [estagio, junior]
 accept_unspecified_level: true  # many junior jobs never say "jr" in the title
 max_years_experience: 2         # skip jobs that ask for more than this
-cities: [sorocaba, sao paulo, campinas, hortolandia]
+# Cities for on-site and hybrid jobs. Searches by city already cover a radius;
+# nationwide sources (Gupy, Adzuna) need the nearby cities named.
+cities: [sorocaba, sao paulo, campinas, hortolandia, tatui, votorantim, itu, salto, boituva,
+         porto feliz, indaiatuba, jundiai, valinhos, vinhedo, paulinia, sumare, americana,
+         barueri, osasco, santana de parnaiba, cotia, taboao da serra, guarulhos,
+         santo andre, sao bernardo do campo, sao caetano do sul]
 only_brazil: true               # skip jobs based abroad, even remote ones
 skip_exclusive_jobs: true       # skip jobs reserved for one group (PCD, vaga afirmativa)
 
@@ -49,4 +60,5 @@ min_score: 45                   # 0-100; raise it if you get too many alerts
 min_skill_match: 30             # skip jobs where I have less than 30% of the skills asked
 max_jobs_per_run: 20            # best ones go to Telegram, the rest stay in the database
 dedupe_days: 30                 # a job seen in the last N days is not sent again
+keep_text_days: 60              # full text of matched jobs, kept for CV Tailor
 notify_when_empty: false

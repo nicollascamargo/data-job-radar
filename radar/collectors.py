@@ -1,4 +1,4 @@
-"""Collects job postings from LinkedIn, Indeed and Glassdoor (via JobSpy) and Adzuna."""
+"""Collects job postings from LinkedIn, Indeed and Glassdoor (via JobSpy), Gupy and Adzuna."""
 
 from __future__ import annotations
 
@@ -7,14 +7,32 @@ import re
 import time
 from collections import Counter
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 
 import requests
 
-from .models import Job, clean
+from .models import Job, clean, norm
 
 log = logging.getLogger(__name__)
 
 ADZUNA_URL = "https://api.adzuna.com/v1/api/jobs/br/search/{page}"
+# The search behind portal.gupy.io: most Brazilian companies post their jobs on Gupy,
+# often only there, with the full text and the application deadline.
+GUPY_URL = "https://portal.gupy.io/api/job-search/jobs"
+GUPY_PAGE = 100
+GUPY_MAX_PAGES = 5
+GUPY_LEVELS = {"vacancy_type_internship": "internship", "vacancy_type_trainee": "entry level"}
+# not an opening I can apply to as a student: talent pools, apprentice programs, freelancing
+GUPY_SKIP = {"vacancy_type_talent_pool", "vacancy_type_apprentice", "vacancy_type_freelancer",
+             "vacancy_type_autonomous", "vacancy_type_lecturer"}
+STATES = {
+    "acre": "AC", "alagoas": "AL", "amapa": "AP", "amazonas": "AM", "bahia": "BA", "ceara": "CE",
+    "distrito federal": "DF", "espirito santo": "ES", "goias": "GO", "maranhao": "MA", "mato grosso": "MT",
+    "mato grosso do sul": "MS", "minas gerais": "MG", "para": "PA", "paraiba": "PB", "parana": "PR",
+    "pernambuco": "PE", "piaui": "PI", "rio de janeiro": "RJ", "rio grande do norte": "RN",
+    "rio grande do sul": "RS", "rondonia": "RO", "roraima": "RR", "santa catarina": "SC",
+    "sao paulo": "SP", "sergipe": "SE", "tocantins": "TO",
+}
 
 # JobSpy logs scraping errors and returns an empty table instead of raising,
 # so the radar listens to its loggers to tell "no jobs today" from "site blocked us".
@@ -181,8 +199,83 @@ def scrape_adzuna(config: dict, report: CollectReport) -> None:
                 time.sleep(1)
 
 
+def gupy_terms(config: dict) -> list[str]:
+    """Gupy searches job titles, one phrase at a time: the Portuguese phrases of the queries
+    (English titles are rare there) plus gupy_extra_terms."""
+    phrases = []
+    for query in config["queries"].values():
+        found = re.findall(r'"([^"]+)"', query) or [query]
+        phrases += [p for p in found if not re.search(r"\b(data|analyst|engineer|scientist)\b", p.lower())]
+    return list(dict.fromkeys(phrases + list(config.get("gupy_extra_terms", []))))
+
+
+def _state_code(state: str) -> str:
+    return STATES.get(norm(state), clean(state))
+
+
+def gupy_job(item: dict) -> Job | None:
+    if item.get("type") in GUPY_SKIP:
+        return None
+    workplace = clean(item.get("workplaceType"))
+    city, state = clean(item.get("city")), _state_code(item.get("state") or "")
+    location = ", ".join(p for p in (city, state) if p) + (", Brasil" if city or state else "")
+    if workplace == "remote" and not city:
+        location = "Remoto, Brasil"
+    modality = {"remote": "remoto", "hybrid": "híbrido", "on-site": "presencial"}.get(workplace, "")
+    return Job(
+        site="gupy",
+        title=re.sub(r"\s+", " ", clean(item.get("name"))),
+        company=clean(item.get("careerPageName")),
+        location=location,
+        url=clean(item.get("jobUrl")).split("?")[0],
+        # Gupy glues the post's sections together; the work model goes first so the matcher sees it
+        description=(f"Modelo de trabalho: {modality}.\n" if modality else "") + clean(item.get("description")),
+        is_remote=workplace == "remote",
+        job_level=GUPY_LEVELS.get(item.get("type"), ""),
+        date_posted=clean(item.get("publishedDate"))[:10],
+        deadline=clean(item.get("applicationDeadline"))[:10],
+        origin="",                       # nationwide search: the matcher checks the city
+        query_area="",
+    )
+
+
+def scrape_gupy(config: dict, report: CollectReport, now: datetime | None = None) -> None:
+    """Newest first, page by page, until the jobs are older than hours_old."""
+    if not config.get("gupy"):
+        return
+    cutoff = ((now or datetime.now(timezone.utc)) - timedelta(hours=config["hours_old"])).isoformat()
+    for term in gupy_terms(config):
+        report.searches["gupy"] += 1
+        found = 0
+        try:
+            for page in range(GUPY_MAX_PAGES):
+                resp = requests.get(GUPY_URL, params={"jobName": term, "limit": GUPY_PAGE,
+                                                      "offset": page * GUPY_PAGE},
+                                    headers={"User-Agent": "Mozilla/5.0 (data-job-radar)"}, timeout=30)
+                resp.raise_for_status()
+                items = resp.json().get("data", [])
+                fresh = [i for i in items if clean(i.get("publishedDate")) >= cutoff]
+                for item in fresh:
+                    job = gupy_job(item)
+                    if job and job.title and job.url:
+                        report.jobs.append(job)
+                        found += 1
+                if len(fresh) < len(items) or len(items) < GUPY_PAGE:
+                    break
+                time.sleep(1)
+        except Exception as exc:
+            report.failures["gupy"] += 1
+            report.errors["gupy"] = f"{type(exc).__name__}: {exc}"[:200]
+            log.warning("gupy failed for %s: %s", term, exc)
+            continue
+        report.counts["gupy"] += found
+        log.info("gupy      %-30s -> %d", term, found)
+        time.sleep(1)
+
+
 def collect(config: dict) -> CollectReport:
     report = CollectReport()
     scrape_jobspy(config, report)
+    scrape_gupy(config, report)
     scrape_adzuna(config, report)
     return report

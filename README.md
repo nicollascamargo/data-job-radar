@@ -2,7 +2,7 @@
 
 ![Tests](https://github.com/nicollascamargo/data-job-radar/actions/workflows/tests.yml/badge.svg)
 
-A small data pipeline that searches LinkedIn, Indeed, Glassdoor and Adzuna twice a day for **internship and junior data jobs** (data analysis, data engineering, data science), compares each posting with the skills in my CV and sends only the good ones to my phone through Telegram, along with the skills I'm missing for each one.
+A small data pipeline that searches LinkedIn, Indeed, Glassdoor, Gupy and Adzuna four times a day for **internship and junior data jobs** (data analysis, data engineering, data science), compares each posting with the skills in my CV and sends only the good ones to my phone through Telegram, along with the skills I'm missing for each one.
 
 I built it because checking three job boards every day by hand was slow and I kept missing new postings.
 
@@ -13,19 +13,20 @@ Data Engineer Jr - Remoto
 🏢 Nuvem Dados
 📍 Remoto
 🎯 Júnior · Engenharia de dados · 90/100
-🧩 Você tem 80% das skills pedidas
-✅ python, sql, etl, git
+🧩 Você tem 80% das skills: python, sql, etl, git
 📚 Falta: airflow
-🔗 Ver no LinkedIn
+🕒 publicada hoje · inscrições até 20/11
+🔗 Ver na vaga (LinkedIn)
 ```
 
 ## How it works
 
 ```
-GitHub Actions (07:07 and 17:07, Brasília time)
+GitHub Actions (07:07, 11:07, 15:07 and 19:07, Brasília time)
    │
-   ├─ 1. Collect   JobSpy (LinkedIn, Indeed, Glassdoor) + Adzuna API
-   │               3 areas × (Sorocaba, São Paulo, Campinas, Hortolândia + remote in Brazil)
+   ├─ 1. Collect   JobSpy (LinkedIn, Indeed, Glassdoor) + Gupy + Adzuna API
+   │               5 searches (analysis, engineering, science, BI, internships) ×
+   │               (Sorocaba, São Paulo, Campinas, Hortolândia + remote in Brazil)
    ├─ 2. Dedupe    SQLite remembers every job seen in the last 30 days,
    │               and the same job posted on two sites counts once
    ├─ 3. Match     rule-based scoring (0–100): role, level, location,
@@ -55,6 +56,10 @@ GitHub Actions (07:07 and 17:07, Brasília time)
 
 Every data job collected is stored with its extracted skills, which feeds the next step of the project: an analysis of what the Brazilian market asks of junior data professionals.
 
+**Why four runs a day and Gupy.** Recruiters read the first applications first, so the radar checks every four hours instead of twice a day. Gupy is where most Brazilian companies post, often only there (internship programs especially); its public search returns the full text and the application deadline, which the alert shows ("inscrições até 20/11", with a warning when fewer than 5 days are left). Gupy searches the whole country, so the nearby cities are listed in `cities`.
+
+**Full text for CV Tailor.** For the jobs that match, the radar keeps the post's text (zlib-compressed, dropped after `keep_text_days`) and the deadline in `data/jobs.db`. [CV Tailor](https://github.com/nicollascamargo/cv-tailor) uses that text when LinkedIn or Indeed won't let it read the post, so the tailored CV is built from the real requirements instead of a list of skills.
+
 ## Setup (≈10 minutes)
 
 **0. Your skills**
@@ -79,7 +84,7 @@ In the repository: *Settings → Secrets and variables → Actions → New repos
 | `ADZUNA_APP_KEY` | no |
 
 **4. First run**
-*Actions → Job radar → Run workflow*. After that it runs on its own twice a day.
+*Actions → Job radar → Run workflow*. After that it runs on its own four times a day.
 
 ## Customizing
 

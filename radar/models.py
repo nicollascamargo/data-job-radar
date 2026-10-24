@@ -38,6 +38,7 @@ class Job:
     date_posted: str = ""
     origin: str = ""             # the city searched, or "remote"
     query_area: str = ""         # analise / engenharia / ciencia
+    deadline: str = ""           # last day to apply, when the site says (Gupy)
 
 
 @dataclass

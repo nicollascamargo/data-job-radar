@@ -19,6 +19,8 @@ DEFAULTS: dict[str, Any] = {
     "remote_location": "Brasil",
     "sites": ["indeed", "linkedin", "glassdoor"],
     "adzuna": True,
+    "gupy": True,
+    "gupy_extra_terms": [],
     "hours_old": 24,
     "results_per_search": 30,
     "pause_seconds": 4,
@@ -37,6 +39,7 @@ DEFAULTS: dict[str, Any] = {
     "min_skill_match": 30,
     "max_jobs_per_run": 20,
     "dedupe_days": 30,
+    "keep_text_days": 60,
     "notify_when_empty": False,
 }
 

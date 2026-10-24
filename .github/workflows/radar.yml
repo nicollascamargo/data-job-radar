@@ -2,8 +2,11 @@ name: Job radar
 
 on:
   schedule:
+    # four times a day: the first applicants are the ones recruiters read
     - cron: "7 10 * * *"   # 07:07 in Brasília
-    - cron: "7 20 * * *"   # 17:07 in Brasília
+    - cron: "7 14 * * *"   # 11:07
+    - cron: "7 18 * * *"   # 15:07
+    - cron: "7 22 * * *"   # 19:07
   workflow_dispatch:       # "Run workflow" button for a manual run
 
 permissions:

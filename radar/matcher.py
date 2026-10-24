@@ -164,8 +164,9 @@ def detect_modality(job: Job, title: str, location: str, description: str) -> st
 
 
 def in_target_city(location: str, cities: list[str]) -> bool:
+    """Whole words only: "itu" is Itu, not Itupeva or Ituverava."""
     first_part = location.split(",")[0].strip()
-    return any(norm(city) in first_part for city in cities)
+    return any(re.search(rf"\b{re.escape(norm(city))}\b", first_part) for city in cities)
 
 
 def compare_skills(job: Job, my_skills: list[str]) -> tuple[list[str], list[str], int | None, int]:
