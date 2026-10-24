@@ -78,6 +78,7 @@ def test_skills_use_word_boundaries():
 def test_skills_understand_portuguese_and_english():
     assert extract_skills("aprendizado de máquina e séries temporais") == ["machine learning", "series temporais"]
     assert extract_skills("machine learning and time series forecasting") == ["machine learning", "series temporais"]
+    assert extract_skills("redes neurais, LLMs e PLN") == extract_skills("neural networks, LLMs and NLP")
     assert extract_skills("PySpark no Databricks, Power BI, sklearn") == [
         "scikit-learn", "spark", "databricks", "power bi"]
 

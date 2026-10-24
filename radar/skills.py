@@ -64,7 +64,7 @@ SKILLS: dict[str, list[str]] = {
     "machine learning": [r"machine learning", r"aprendizado de maquina", r"\bml\b"],
     "deep learning": [r"deep learning", r"redes neurais", r"neural networks?"],
     "series temporais": [r"series? temporais", r"time[- ]series", r"\bforecast"],
-    "nlp": [r"\bnlp\b", r"processamento de linguagem natural", r"natural language processing"],
+    "nlp": [r"\bnlp\b", r"\bpln\b", r"processamento de linguagem natural", r"natural language processing"],
     "llm / ia generativa": [r"\bllms?\b", r"ia generativa", r"generative ai", r"\bgenai\b"],
     # languages spoken
     "ingles": [r"\bingles\b", r"\benglish\b"],

@@ -1,4 +1,4 @@
-# Generated from my CV on 2026-10-07 by scripts/build_profile.py
+# Generated from my CV on 2026-10-23 by scripts/build_profile.py
 # Only skills are stored here. Add or remove items freely.
 # (espanhol removed: A2 does not meet jobs that ask for Spanish)
 skills:
@@ -14,11 +14,12 @@ skills:
 - matplotlib
 - fastapi
 - etl
+- data warehouse
+- modelagem de dados
 - git
 - ci/cd
 - excel
 - power bi
-- estatistica
 - machine learning
 - deep learning
 - series temporais
